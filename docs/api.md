@@ -437,7 +437,7 @@ Generated projects use these environment variables (in `.env` file):
 
 ### Core Settings
 
-```env
+```bash
 # Application
 APP_NAME=my-app
 DEBUG=false

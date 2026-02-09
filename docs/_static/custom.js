@@ -1,392 +1,98 @@
-// ================================================================
-// ONE CLICK AI SPARK - Custom Documentation JavaScript
-// Interactive Animations & Enhanced User Experience
-// ================================================================
+/* =============================================================
+   ONE CLICK AI SPARK — Safe RTD JavaScript Enhancements
+   Non-destructive: no text wiping, no layout-breaking effects.
+   ============================================================= */
 
-(function() {
-    'use strict';
+(function () {
+  'use strict';
 
-    // ============ WAIT FOR DOM LOAD ============
-    document.addEventListener('DOMContentLoaded', function() {
-        initAnimations();
-        initScrollEffects();
-        initCodeCopyButtons();
-        initDynamicLinks();
-        initParticles();
-        initTypingEffect();
-    });
+  document.addEventListener('DOMContentLoaded', function () {
+    addCopyButtons();
+    addProgressBar();
+    addBackToTop();
+  });
 
-    // ============ INITIALIZE ANIMATIONS ============
-    function initAnimations() {
-        // Fade in elements on scroll
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('animate-in');
-                }
-            });
-        }, {
-            threshold: 0.1
-        });
+  /* ---------- Copy buttons on code blocks ---------- */
+  function addCopyButtons() {
+    document.querySelectorAll('.highlight pre, .rst-content pre').forEach(function (pre) {
+      // skip if already has a button
+      if (pre.querySelector('.oc-copy-btn')) return;
 
-        document.querySelectorAll('.section, h2, h3, table, pre').forEach(el => {
-            observer.observe(el);
-        });
-    }
+      var btn = document.createElement('button');
+      btn.className = 'oc-copy-btn';
+      btn.textContent = 'Copy';
+      btn.style.cssText =
+        'position:absolute;top:6px;right:6px;' +
+        'background:#00b4d8;color:#fff;border:none;border-radius:4px;' +
+        'padding:3px 10px;font-size:.78rem;font-weight:600;cursor:pointer;' +
+        'opacity:.7;transition:opacity .2s;z-index:5;';
 
-    // ============ SCROLL EFFECTS ============
-    function initScrollEffects() {
-        let ticking = false;
+      btn.addEventListener('mouseenter', function () { btn.style.opacity = '1'; });
+      btn.addEventListener('mouseleave', function () { btn.style.opacity = '.7'; });
 
-        window.addEventListener('scroll', () => {
-            if (!ticking) {
-                window.requestAnimationFrame(() => {
-                    handleScroll();
-                    ticking = false;
-                });
-                ticking = true;
-            }
-        });
+      btn.addEventListener('click', function () {
+        var code = pre.querySelector('code') || pre;
+        var text = code.textContent || code.innerText;
 
-        function handleScroll() {
-            const scrolled = window.pageYOffset;
-            
-            // Parallax effect for headers
-            document.querySelectorAll('h1').forEach(h1 => {
-                const speed = 0.5;
-                h1.style.transform = `translateY(${scrolled * speed}px)`;
-            });
-
-            // Add shadow to top bar when scrolled
-            const topBar = document.querySelector('.wy-nav-top');
-            if (topBar) {
-                if (scrolled > 50) {
-                    topBar.style.boxShadow = '0 4px 20px rgba(0, 212, 255, 0.3)';
-                } else {
-                    topBar.style.boxShadow = '0 4px 20px rgba(0, 212, 255, 0.1)';
-                }
-            }
+        if (navigator.clipboard) {
+          navigator.clipboard.writeText(text).then(function () {
+            btn.textContent = 'Copied!';
+            btn.style.background = '#10b981';
+            setTimeout(function () { btn.textContent = 'Copy'; btn.style.background = '#00b4d8'; }, 1500);
+          });
         }
-    }
+      });
 
-    // ============ CODE COPY BUTTONS ============
-    function initCodeCopyButtons() {
-        document.querySelectorAll('pre').forEach(pre => {
-            // Create copy button
-            const button = document.createElement('button');
-            button.className = 'copy-button';
-            button.innerHTML = '📋 Copy';
-            button.style.cssText = `
-                position: absolute;
-                top: 0.5rem;
-                right: 0.5rem;
-                background: linear-gradient(135deg, #00d4ff 0%, #7c3aed 100%);
-                color: white;
-                border: none;
-                border-radius: 6px;
-                padding: 0.5rem 1rem;
-                cursor: pointer;
-                font-size: 0.85rem;
-                font-weight: 600;
-                transition: all 0.3s;
-                z-index: 10;
-            `;
+      // ensure relative positioning on parent
+      var wrapper = pre.closest('.highlight') || pre;
+      if (getComputedStyle(wrapper).position === 'static') {
+        wrapper.style.position = 'relative';
+      }
+      wrapper.appendChild(btn);
+    });
+  }
 
-            button.addEventListener('mouseenter', () => {
-                button.style.transform = 'scale(1.05)';
-                button.style.boxShadow = '0 4px 20px rgba(0, 212, 255, 0.5)';
-            });
+  /* ---------- Reading progress bar ---------- */
+  function addProgressBar() {
+    var bar = document.createElement('div');
+    bar.style.cssText =
+      'position:fixed;top:0;left:0;height:3px;width:0;' +
+      'background:linear-gradient(90deg,#00b4d8,#7c3aed,#f59e0b);' +
+      'z-index:9999;transition:width .15s;pointer-events:none;';
+    document.body.appendChild(bar);
 
-            button.addEventListener('mouseleave', () => {
-                button.style.transform = 'scale(1)';
-                button.style.boxShadow = 'none';
-            });
+    window.addEventListener('scroll', function () {
+      var scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
+      var docHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+      bar.style.width = docHeight > 0 ? (scrollTop / docHeight * 100) + '%' : '0%';
+    });
+  }
 
-            button.addEventListener('click', async () => {
-                const code = pre.querySelector('code');
-                const text = code ? code.textContent : pre.textContent;
-                
-                try {
-                    await navigator.clipboard.writeText(text);
-                    button.innerHTML = '✅ Copied!';
-                    button.style.background = 'linear-gradient(135deg, #10b981 0%, #059669 100%)';
-                    
-                    setTimeout(() => {
-                        button.innerHTML = '📋 Copy';
-                        button.style.background = 'linear-gradient(135deg, #00d4ff 0%, #7c3aed 100%)';
-                    }, 2000);
-                } catch (err) {
-                    button.innerHTML = '❌ Failed';
-                    setTimeout(() => {
-                        button.innerHTML = '📋 Copy';
-                    }, 2000);
-                }
-            });
+  /* ---------- Back-to-top button ---------- */
+  function addBackToTop() {
+    var btn = document.createElement('button');
+    btn.innerHTML = '&#8679;';  // ⇧
+    btn.setAttribute('aria-label', 'Back to top');
+    btn.style.cssText =
+      'position:fixed;bottom:1.5rem;right:1.5rem;width:40px;height:40px;' +
+      'border-radius:50%;border:none;font-size:1.3rem;line-height:1;' +
+      'background:linear-gradient(135deg,#00b4d8,#7c3aed);color:#fff;' +
+      'cursor:pointer;opacity:0;transition:opacity .3s,transform .2s;z-index:999;' +
+      'box-shadow:0 2px 10px rgba(0,0,0,.3);';
 
-            pre.style.position = 'relative';
-            pre.appendChild(button);
-        });
-    }
+    document.body.appendChild(btn);
 
-    // ============ DYNAMIC LINKS WITH ICONS ============
-    function initDynamicLinks() {
-        // Add icons to external links
-        document.querySelectorAll('a[href^="http"]').forEach(link => {
-            if (!link.querySelector('.link-icon')) {
-                const icon = document.createElement('span');
-                icon.className = 'link-icon';
-                icon.innerHTML = ' 🔗';
-                icon.style.cssText = `
-                    opacity: 0.6;
-                    font-size: 0.85em;
-                    transition: all 0.3s;
-                `;
-                link.appendChild(icon);
-
-                link.addEventListener('mouseenter', () => {
-                    icon.style.opacity = '1';
-                    icon.style.transform = 'translateX(3px)';
-                });
-
-                link.addEventListener('mouseleave', () => {
-                    icon.style.opacity = '0.6';
-                    icon.style.transform = 'translateX(0)';
-                });
-            }
-        });
-
-        // Add GitHub icon to GitHub links
-        document.querySelectorAll('a[href*="github.com"]').forEach(link => {
-            const icon = link.querySelector('.link-icon');
-            if (icon) {
-                icon.innerHTML = ' ⭐';
-            }
-        });
-
-        // Add PyPI icon to PyPI links
-        document.querySelectorAll('a[href*="pypi.org"]').forEach(link => {
-            const icon = link.querySelector('.link-icon');
-            if (icon) {
-                icon.innerHTML = ' 📦';
-            }
-        });
-    }
-
-    // ============ PARTICLE BACKGROUND ============
-    function initParticles() {
-        const canvas = document.createElement('canvas');
-        canvas.id = 'particles';
-        canvas.style.cssText = `
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: -1;
-            opacity: 0.3;
-        `;
-        document.body.prepend(canvas);
-
-        const ctx = canvas.getContext('2d');
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-
-        const particles = [];
-        const particleCount = 50;
-
-        class Particle {
-            constructor() {
-                this.x = Math.random() * canvas.width;
-                this.y = Math.random() * canvas.height;
-                this.vx = (Math.random() - 0.5) * 0.5;
-                this.vy = (Math.random() - 0.5) * 0.5;
-                this.radius = Math.random() * 2 + 1;
-            }
-
-            update() {
-                this.x += this.vx;
-                this.y += this.vy;
-
-                if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
-                if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
-            }
-
-            draw() {
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-                ctx.fillStyle = 'rgba(0, 212, 255, 0.5)';
-                ctx.fill();
-            }
-        }
-
-        for (let i = 0; i < particleCount; i++) {
-            particles.push(new Particle());
-        }
-
-        function animate() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-            particles.forEach(particle => {
-                particle.update();
-                particle.draw();
-            });
-
-            // Draw connections
-            particles.forEach((p1, i) => {
-                particles.slice(i + 1).forEach(p2 => {
-                    const dx = p1.x - p2.x;
-                    const dy = p1.y - p2.y;
-                    const distance = Math.sqrt(dx * dx + dy * dy);
-
-                    if (distance < 150) {
-                        ctx.beginPath();
-                        ctx.moveTo(p1.x, p1.y);
-                        ctx.lineTo(p2.x, p2.y);
-                        ctx.strokeStyle = `rgba(0, 212, 255, ${0.2 * (1 - distance / 150)})`;
-                        ctx.stroke();
-                    }
-                });
-            });
-
-            requestAnimationFrame(animate);
-        }
-
-        animate();
-
-        window.addEventListener('resize', () => {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-        });
-    }
-
-    // ============ TYPING EFFECT FOR H1 ============
-    function initTypingEffect() {
-        const h1Elements = document.querySelectorAll('h1');
-        
-        h1Elements.forEach(h1 => {
-            const text = h1.textContent;
-            h1.textContent = '';
-            h1.style.opacity = '1';
-            
-            let index = 0;
-            const cursor = document.createElement('span');
-            cursor.textContent = '|';
-            cursor.style.cssText = `
-                animation: blink 1s infinite;
-                color: #00d4ff;
-            `;
-            
-            // Add blink animation
-            if (!document.getElementById('blink-style')) {
-                const style = document.createElement('style');
-                style.id = 'blink-style';
-                style.textContent = `
-                    @keyframes blink {
-                        0%, 50% { opacity: 1; }
-                        51%, 100% { opacity: 0; }
-                    }
-                `;
-                document.head.appendChild(style);
-            }
-
-            function type() {
-                if (index < text.length) {
-                    h1.textContent = text.substring(0, index + 1);
-                    h1.appendChild(cursor);
-                    index++;
-                    setTimeout(type, 50);
-                } else {
-                    setTimeout(() => cursor.remove(), 1000);
-                }
-            }
-
-            // Start typing after a short delay
-            setTimeout(type, 500);
-        });
-    }
-
-    // ============ SMOOTH SCROLL FOR ANCHOR LINKS ============
-    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-        anchor.addEventListener('click', function(e) {
-            e.preventDefault();
-            const target = document.querySelector(this.getAttribute('href'));
-            if (target) {
-                target.scrollIntoView({
-                    behavior: 'smooth',
-                    block: 'start'
-                });
-            }
-        });
+    window.addEventListener('scroll', function () {
+      btn.style.opacity = window.pageYOffset > 400 ? '1' : '0';
+      btn.style.pointerEvents = window.pageYOffset > 400 ? 'auto' : 'none';
     });
 
-    // ============ PROGRESS BAR ============
-    const progressBar = document.createElement('div');
-    progressBar.style.cssText = `
-        position: fixed;
-        top: 0;
-        left: 0;
-        height: 3px;
-        background: linear-gradient(90deg, #00d4ff 0%, #7c3aed 50%, #f59e0b 100%);
-        z-index: 9999;
-        transition: width 0.1s;
-        box-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
-    `;
-    document.body.prepend(progressBar);
-
-    window.addEventListener('scroll', () => {
-        const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
-        const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
-        const scrolled = (winScroll / height) * 100;
-        progressBar.style.width = scrolled + '%';
+    btn.addEventListener('click', function () {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     });
 
-    // ============ BACK TO TOP BUTTON ============
-    const backToTop = document.createElement('button');
-    backToTop.innerHTML = '⬆️';
-    backToTop.style.cssText = `
-        position: fixed;
-        bottom: 2rem;
-        right: 2rem;
-        width: 50px;
-        height: 50px;
-        border-radius: 50%;
-        background: linear-gradient(135deg, #00d4ff 0%, #7c3aed 100%);
-        color: white;
-        border: none;
-        font-size: 1.5rem;
-        cursor: pointer;
-        opacity: 0;
-        transition: all 0.3s;
-        z-index: 1000;
-        box-shadow: 0 4px 20px rgba(0, 212, 255, 0.3);
-    `;
-
-    document.body.appendChild(backToTop);
-
-    window.addEventListener('scroll', () => {
-        if (window.pageYOffset > 300) {
-            backToTop.style.opacity = '1';
-        } else {
-            backToTop.style.opacity = '0';
-        }
-    });
-
-    backToTop.addEventListener('click', () => {
-        window.scrollTo({
-            top: 0,
-            behavior: 'smooth'
-        });
-    });
-
-    backToTop.addEventListener('mouseenter', () => {
-        backToTop.style.transform = 'scale(1.1) translateY(-5px)';
-        backToTop.style.boxShadow = '0 8px 30px rgba(0, 212, 255, 0.5)';
-    });
-
-    backToTop.addEventListener('mouseleave', () => {
-        backToTop.style.transform = 'scale(1) translateY(0)';
-        backToTop.style.boxShadow = '0 4px 20px rgba(0, 212, 255, 0.3)';
-    });
+    btn.addEventListener('mouseenter', function () { btn.style.transform = 'scale(1.1)'; });
+    btn.addEventListener('mouseleave', function () { btn.style.transform = 'scale(1)'; });
+  }
 
 })();

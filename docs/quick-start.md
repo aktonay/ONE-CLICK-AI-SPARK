@@ -113,7 +113,7 @@ cp .env.example .env
 
 Open `.env` in any text editor and add your keys:
 
-```env
+```bash
 # OpenAI (for GPT-4)
 OPENAI_API_KEY=sk-your-key-here
 
@@ -452,7 +452,7 @@ pip install -r requirements.txt
 ### "OpenAI API key not found"
 
 **Solution:** Check your `.env` file has:
-```env
+```bash
 OPENAI_API_KEY=sk-your-actual-key-here
 ```
 
@@ -478,7 +478,7 @@ lsof -ti:8000 | xargs kill
 ### "Database connection failed"
 
 **Solution:** Update `.env` with correct database URL, or use SQLite for testing:
-```env
+```bash
 DATABASE_URL=sqlite:///./chatbot.db
 ```
 

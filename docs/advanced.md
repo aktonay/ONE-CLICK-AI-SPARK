@@ -694,7 +694,7 @@ Available in all templates:
    ```
 
 2. **Pin dependencies:**
-   ```txt
+   ```text
    # requirements.txt
    fastapi==0.109.0
    openai==1.10.0
